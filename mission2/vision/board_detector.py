@@ -400,9 +400,13 @@ def infer_grid_from_warped(
 
             orange_n = int(cv2.countNonZero(orange))
             yellow_n = int(cv2.countNonZero(yellow))
+            # If "empty" (red background) overlaps with orange/yellow ranges under current lighting,
+            # don't let those pixels vote for empty.
+            ball_union = cv2.bitwise_or(orange, yellow)
             empty = red
             if empty_custom is not None:
                 empty = cv2.bitwise_or(empty, empty_custom)
+            empty = cv2.bitwise_and(empty, cv2.bitwise_not(ball_union))
             empty_n = int(cv2.countNonZero(empty))
 
             # Require a minimum fraction of pixels to be classified as ball.
@@ -410,23 +414,64 @@ def infer_grid_from_warped(
 
             decision = None
             decision_reason = "none"
+            mean_h: float | None = None
+            boundary_h: int | None = None
+            g_ratio: float | None = None
 
+            # Empty holes often show red background which can also overlap with "orange".
+            # Prefer empty when it ties or wins.
             if empty_n > max(min_pixels, orange_n, yellow_n):
                 decision = None
                 decision_reason = "empty>orange,yellow"
+            # If both orange+yellow are present, resolve by mean hue using a boundary derived
+            # from the configured HSV ranges (more stable than picking the larger mask).
+            elif orange_n > min_pixels and yellow_n > min_pixels and max(orange_n, yellow_n) > empty_n:
+                union = cv2.bitwise_or(orange, yellow)
+                if cv2.countNonZero(union) > 0:
+                    hue = roi[:, :, 0]
+                    # Median is less sensitive to glare/shadows than mean.
+                    mean_h = float(np.median(hue[union > 0]))
+                    orange_hi_h = int(hsv_cfg["orange_hi"][0])
+                    yellow_lo_h = int(hsv_cfg["yellow_lo"][0])
+                    boundary_h = int(round((orange_hi_h + yellow_lo_h) / 2.0))
+
+                    # Extra safety: confirm overlap decisions using relative RGB.
+                    # Yellow tends to have higher G/R than orange under most lighting.
+                    try:
+                        roi_bgr = warped_bgr[y0:y1, x0:x1]
+                        bgr_vals = roi_bgr[union > 0].reshape(-1, 3).astype(np.float32)
+                        if bgr_vals.size:
+                            b, g, r = (float(x) for x in bgr_vals.mean(axis=0))
+                            g_ratio = float(g / (r + 1e-6))
+                    except Exception:
+                        g_ratio = None
+
+                    tentative = "yellow" if mean_h >= boundary_h else "orange"
+                    ratio_thr = 0.80
+                    ratio_band = 0.03
+                    if g_ratio is None:
+                        decision = tentative
+                    elif tentative == "yellow" and g_ratio >= (ratio_thr - ratio_band):
+                        decision = "yellow"
+                    elif tentative == "orange" and g_ratio <= (ratio_thr + ratio_band):
+                        decision = "orange"
+                    elif g_ratio >= (ratio_thr + 0.05):
+                        decision = "yellow"
+                    elif g_ratio <= (ratio_thr - 0.05):
+                        decision = "orange"
+                    else:
+                        decision = tentative
+
+                    if g_ratio is None:
+                        decision_reason = f"mean_h={mean_h:.1f},boundary={boundary_h}"
+                    else:
+                        decision_reason = f"mean_h={mean_h:.1f},boundary={boundary_h},g_ratio={g_ratio:.2f}"
             elif yellow_n > max(min_pixels, orange_n) and yellow_n > empty_n:
                 decision = "yellow"
                 decision_reason = "yellow>orange,empty"
             elif orange_n > max(min_pixels, yellow_n) and orange_n > empty_n:
                 decision = "orange"
                 decision_reason = "orange>yellow,empty"
-            elif orange_n > min_pixels and yellow_n > min_pixels and max(orange_n, yellow_n) > empty_n:
-                union = cv2.bitwise_or(orange, yellow)
-                if cv2.countNonZero(union) > 0:
-                    hue = roi[:, :, 0]
-                    mean_h = float(hue[union > 0].mean())
-                    decision = "yellow" if mean_h >= 22 else "orange"
-                    decision_reason = f"mean_h={mean_h:.1f}"
 
             if decision is not None:
                 grid[row][col] = decision
@@ -440,6 +485,9 @@ def infer_grid_from_warped(
                 "min_px": min_pixels,
                 "decision": decision,
                 "reason": decision_reason,
+                "mean_h": mean_h,
+                "boundary_h": boundary_h,
+                "g_ratio": g_ratio,
             }
 
     return grid, centers, cell_debug

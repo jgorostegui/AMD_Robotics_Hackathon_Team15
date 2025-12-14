@@ -82,33 +82,10 @@ class GameEngine:
         if self._state is None:
             raise ValueError("Game not started. Call new_game() first.")
 
-        # Validate it's the right player's turn
-        if player != self._state.current_player:
-            self.bus.publish(Event(
-                type=EventType.INVALID_MOVE,
-                data={"reason": "wrong_player", "expected": self._state.current_player.value},
-                source="game_engine"
-            ))
-            return self._state
-
-        # Validate move is legal
-        if column not in self._state.legal_moves:
-            self.bus.publish(Event(
-                type=EventType.INVALID_MOVE,
-                data={"column": column, "legal": self._state.legal_moves},
-                source="game_engine"
-            ))
-            return self._state
-
         # Apply move
         try:
             new_board, position = self.rules.apply_move(self._state.board, column, player)
         except ValueError as e:
-            self.bus.publish(Event(
-                type=EventType.INVALID_MOVE,
-                data={"error": str(e)},
-                source="game_engine"
-            ))
             return self._state
 
         move = Move(column=column, player=player, position=position)

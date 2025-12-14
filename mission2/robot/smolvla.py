@@ -29,8 +29,8 @@ class SmolVLARobot(RobotInterface):
         policy_path: str,
         follower_port: str | None = None,
         follower_id: str | None = None,
-        episode_time: int = DEFAULT_EVAL_EPISODE_TIME_S,
-        reset_time: int = DEFAULT_EVAL_RESET_TIME_S,
+        episode_time: int | None = None,
+        reset_time: int | None = None,
         device: str = "cuda",
         display_data: bool = True,
     ):
@@ -40,8 +40,8 @@ class SmolVLARobot(RobotInterface):
             policy_path: Path to SmolVLA policy (HF repo or local path)
             follower_port: Robot serial port (default: from env or /dev/ttyACM1)
             follower_id: Robot ID (default: from env or follower_arm)
-            episode_time: Max episode duration in seconds
-            reset_time: Reset time between episodes
+            episode_time: Max episode duration in seconds (default: from env `EVAL_EPISODE_TIME` or 30)
+            reset_time: Reset time between episodes (default: from env `EVAL_RESET_TIME` or 10)
             device: Compute device (cuda/cpu)
             display_data: Show camera windows / visualization (subprocess-dependent)
         """
@@ -50,8 +50,16 @@ class SmolVLARobot(RobotInterface):
 
         self.follower_port = follower_port or os.environ.get("FOLLOWER_PORT", "/dev/ttyACM1")
         self.follower_id = follower_id or os.environ.get("FOLLOWER_ID", "follower_arm")
-        self.episode_time = int(episode_time)
-        self.reset_time = int(reset_time)
+        self.episode_time = int(
+            episode_time
+            if episode_time is not None
+            else os.environ.get("EVAL_EPISODE_TIME", str(DEFAULT_EVAL_EPISODE_TIME_S))
+        )
+        self.reset_time = int(
+            reset_time
+            if reset_time is not None
+            else os.environ.get("EVAL_RESET_TIME", str(DEFAULT_EVAL_RESET_TIME_S))
+        )
         self.device = device
         self.display_data = bool(display_data)
 

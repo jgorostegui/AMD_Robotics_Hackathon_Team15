@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import re
+import shlex
 import subprocess
 from collections import deque
 from datetime import datetime
@@ -280,6 +281,9 @@ def run_lerobot_record(
         echo = os.environ.get("MISSION2_SUBPROCESS_ECHO", "").strip().lower() in {"1", "true", "yes", "y"}
         tail: deque[str] = deque(maxlen=200)
 
+        if echo:
+            print("MISSION2 subprocess:", " ".join(shlex.quote(part) for part in cmd), flush=True)
+
         proc = subprocess.Popen(
             cmd,
             cwd=str(project_root),
@@ -308,8 +312,9 @@ def run_lerobot_record(
         rc, tail = run_with_output_tail()
         if rc == 0:
             return True, resolved_root, ""
+        cmd_str = " ".join(shlex.quote(part) for part in cmd)
         if tail.strip():
-            return False, resolved_root, f"subprocess failed (exit {rc}):\n{tail}"
-        return False, resolved_root, f"subprocess failed (exit {rc})"
+            return False, resolved_root, f"subprocess failed (exit {rc})\ncommand: {cmd_str}\n{tail}"
+        return False, resolved_root, f"subprocess failed (exit {rc})\ncommand: {cmd_str}"
     except FileNotFoundError:
         return False, resolved_root, "command not found. Ensure 'uv' is installed and dependencies are synced."

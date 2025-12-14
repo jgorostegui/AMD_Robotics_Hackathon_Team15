@@ -220,18 +220,19 @@ def make_ai_move():
 
 def plan_ai_move() -> None:
     """Compute and display the next robot move without executing it yet."""
-    engine = st.session_state.engine
     game = st.session_state.game
     ai = st.session_state.ai
 
-    if not game or game.phase != GamePhase.ROBOT_TURN:
+    if not game or game.phase == GamePhase.GAME_OVER:
         return
 
-    move, explanation = ai.get_move_with_explanation(game)
+    try:
+        move, explanation = ai.get_move_with_explanation(game)
+    except Exception as e:
+        move, explanation = 2, f"fallback (AI planning failed: {e})"
+
     st.session_state.pending_robot_move = int(move)
     st.session_state.pending_robot_explanation = str(explanation)
-    game.phase = GamePhase.ROBOT_MOVING
-    st.session_state.game = game
     st.session_state.game_log.append(f"🤖 Planned move: column {move} ({explanation})")
 
 
@@ -241,12 +242,14 @@ def execute_planned_move() -> None:
     game = st.session_state.game
     robot = st.session_state.robot
     move = st.session_state.get("pending_robot_move", None)
+    prev_phase = game.phase if game is not None else None
 
-    if game is None or move is None:
+    if move is None:
         return
 
-    game.phase = GamePhase.ROBOT_MOVING
-    st.session_state.game = game
+    if game is not None and prev_phase == GamePhase.ROBOT_TURN:
+        game.phase = GamePhase.ROBOT_MOVING
+        st.session_state.game = game
 
     robot_move = Move(column=int(move), player=Player.ORANGE)
     st.session_state.game_log.append("🦾 Starting robot subprocess...")
@@ -255,14 +258,17 @@ def execute_planned_move() -> None:
     st.session_state.game_log.append(f"🦾 Robot: {robot.get_last_instruction()}")
 
     if getattr(action, "status", None) is None or action.status.name != "COMPLETED":
-        game.phase = GamePhase.ERROR
+        if game is not None and prev_phase == GamePhase.ROBOT_TURN:
+            game.phase = GamePhase.ERROR
         st.session_state.game_log.append(f"❌ Robot move failed: {getattr(action, 'error', 'unknown error')}")
         st.session_state.pending_robot_move = None
         st.session_state.pending_robot_explanation = ""
-        st.session_state.game = game
+        if game is not None:
+            st.session_state.game = game
         return
 
-    st.session_state.game = engine.make_move(int(move), Player.ORANGE)
+    if game is not None and prev_phase == GamePhase.ROBOT_TURN:
+        st.session_state.game = engine.make_move(int(move), Player.ORANGE)
     st.session_state.pending_robot_move = None
     st.session_state.pending_robot_explanation = ""
 
@@ -840,12 +846,15 @@ def main():
         
         game = st.session_state.game
         pending_move = st.session_state.get("pending_robot_move", None)
-        if game and game.phase == GamePhase.ROBOT_TURN and pending_move is None:
-            if st.button("🤖 Plan AI Move", use_container_width=True):
-                plan_ai_move()
-                st.rerun()
+        if st.button("🤖 Plan AI Move", use_container_width=True, disabled=game is None):
+            plan_ai_move()
+            st.rerun()
         if pending_move is not None:
-            st.info(f"Planned robot move: column {pending_move}. Click Execute to run it.")
+            explanation = st.session_state.get("pending_robot_explanation", "")
+            msg = f"Planned robot move: column {pending_move}. Click Execute to run it."
+            if explanation:
+                msg = f"{msg}\n\n{explanation}"
+            st.info(msg)
             col_a, col_b = st.columns(2)
             with col_a:
                 if st.button("▶️ Execute Robot Move", use_container_width=True, type="primary"):
