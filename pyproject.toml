@@ -39,3 +39,29 @@ include = ["mission2*"]
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+  "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 100
+exclude = ["scripts", "mission1"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",    # Line too long - handled by formatter
+    "B008",    # Calls in argument defaults
+    "RUF012",  # Mutable class attributes
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
