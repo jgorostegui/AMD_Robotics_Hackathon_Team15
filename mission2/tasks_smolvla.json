@@ -1,0 +1,24 @@
+{
+  "tasks": [
+    {
+      "id": "task1",
+      "prompt": "Pick the orange ball and place it in column 0."
+    },
+    {
+      "id": "task2",
+      "prompt": "Pick the orange ball and place it in column 1."
+    },
+    {
+      "id": "task3",
+      "prompt": "Pick the orange ball and place it in column 2."
+    },
+    {
+      "id": "task4",
+      "prompt": "Pick the orange ball and place it in column 3."
+    },
+    {
+      "id": "task5",
+      "prompt": "Pick the orange ball and place it in column 4."
+    }
+  ]
+}

@@ -49,7 +49,6 @@ outputs/
 logs/
 data/
 checkpoints/
-wandb/
 *.log
 
 # OS
