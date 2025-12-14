@@ -46,4 +46,8 @@ lerobot-train \
 - **Training**: 50k steps on MI300X
 - **Dataset**: 50 episodes, 3 cameras (top, side, gripper)
 
+## Data Visualization
+
+3-camera setup captured during teleoperation (top, side, gripper views):
+
 ![Rerun Viewer - 3 Camera Setup](rerun_viewer.png)
