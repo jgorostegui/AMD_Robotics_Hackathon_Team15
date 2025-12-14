@@ -1,5 +1,3 @@
-**### Make a fork or copy of this repo and fill in your team submission details! ###**
-
 # AMD Robotics Hackathon 2025 - Team 15
 
 SO-101 robot arm imitation learning using LeRobot and AMD ROCm.
