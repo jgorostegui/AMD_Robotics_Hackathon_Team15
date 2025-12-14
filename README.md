@@ -14,7 +14,7 @@ SO-101 robot arm imitation learning using LeRobot and AMD ROCm.
 
 **Model**: [jlamperez/mission2_smolvla_multitask_policy_30ksteps_120ep](https://huggingface.co/jlamperez/mission2_smolvla_multitask_policy_30ksteps_120ep)
 
-**Training Notebook**: `/home/team15/code/AMD_Robotics_Hackathon_Team15/mission2/code/training-models-on-rocm-smolvla.ipynb`
+**Training Notebook**: `mission2/code/training-models-on-rocm-smolvla.ipynb`
 
 ## Mission 1: Pick & Place
 
