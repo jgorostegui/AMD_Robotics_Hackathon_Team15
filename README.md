@@ -2,6 +2,20 @@
 
 SO-101 robot arm imitation learning using LeRobot and AMD ROCm.
 
+## Mission 2: Connect 4
+
+- Game dashboard (mock robot): `uv run streamlit run mission2/app/game_dashboard.py`
+- Vision calibrator: `uv run streamlit run mission2/app/calibrate_connect4.py`
+- CLI game (Human vs AI): `uv run python -m mission2.cli.main play --mock` (or `--policy <HF_REPO_OR_PATH>`)
+- Run SmolVLA task prompts (keeps model loaded, no GUI): `uv run python -m mission2.cli.main inference <POLICY> task1 task2:3`
+- Interactive task runner: `uv run python -m mission2.cli.main inference <POLICY> --interactive` (type `list`, `task1`, `all`, `quit`)
+
+**Dataset**: [jlamperez/mission2_smolvla_multitask_v2_120ep](https://huggingface.co/datasets/jlamperez/mission2_smolvla_multitask_v2_120ep)
+
+**Model**: [jlamperez/mission2_smolvla_multitask_policy_30ksteps_120ep](https://huggingface.co/jlamperez/mission2_smolvla_multitask_policy_30ksteps_120ep)
+
+**Training Notebook**: `/home/team15/code/AMD_Robotics_Hackathon_Team15/mission2/code/training-models-on-rocm-smolvla.ipynb`
+
 ## Mission 1: Pick & Place
 
 Train an ACT (Action Chunking Transformer) policy to pick objects and place them at target locations.
