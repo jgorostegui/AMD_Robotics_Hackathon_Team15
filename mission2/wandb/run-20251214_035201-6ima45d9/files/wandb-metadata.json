@@ -1,0 +1,51 @@
+{
+  "os":  "Linux-6.1.0-39-amd64-x86_64-with-glibc2.39",
+  "python":  "CPython 3.12.3",
+  "startedAt":  "2025-12-14T03:52:01.261367Z",
+  "args":  [
+    "--policy.path=lerobot/smolvla_base",
+    "--dataset.repo_id=jlamperez/mission2_smolvla_multitask_v2_120ep",
+    "--policy.repo_id=jlamperez/mission2_smolvla_multitask_policy_30ksteps_120ep",
+    "--batch_size=64",
+    "--steps=30000",
+    "--save_freq=5000",
+    "--output_dir=outputs/train/mission2_smolvla_multitask_30ksteps_120ep",
+    "--job_name=my_smolvla_training_30ksteps_120ep",
+    "--policy.device=cuda",
+    "--wandb.enable=true",
+    "--policy.use_amp=true"
+  ],
+  "program":  "/opt/venv/bin/lerobot-train",
+  "root":  "outputs/train/mission2_smolvla_multitask_30ksteps_120ep",
+  "host":  "robotics-jupyter-launcher-3532",
+  "executable":  "/opt/venv/bin/python",
+  "cpu_count":  160,
+  "cpu_count_logical":  160,
+  "gpu":  "AMD Instinct MI300X VF",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "2162185003008",
+      "used":  "1347009740800"
+    }
+  },
+  "memory":  {
+    "total":  "2029207175168"
+  },
+  "gpu_amd":  [
+    {
+      "id":  "0",
+      "uniqueId":  "0xdb160b2da5abd00a",
+      "vbiosVersion":  "113-M3000100-103",
+      "performanceLevel":  "auto",
+      "maxPower":  "750.0",
+      "series":  "AMD Instinct MI300X VF",
+      "model":  "0x74b5",
+      "vendor":  "Advanced Micro Devices, Inc. [AMD/ATI]",
+      "sku":  "M3000100",
+      "sclkRange":  "500Mhz - 2100Mhz",
+      "mclkRange":  "900Mhz - 1300Mhz"
+    }
+  ],
+  "writerId":  "cn9oks49cjby0wupabci63z6b7ejfdti"
+}
