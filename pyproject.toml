@@ -1,0 +1,41 @@
+[project]
+name = "amd-robotics-hackathon-team15"
+version = "0.1.0"
+description = "AMD Open Robotics Hackathon 2025 - Team 15. LeRobot application with SO-101 arm using AMD ROCm and Instinct MI300X."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "torch==2.7.1",
+  "torchvision==0.22.1",
+  "torchaudio==2.7.1",
+  "pytorch-triton-rocm>=3.3.1 ; sys_platform == 'linux'",
+  "lerobot[feetech]>=0.4.2",
+  "fastapi>=0.124.4",
+  "num2words>=0.5.14",
+  "transformers>=4.57.3",
+  "huggingface-hub[cli]>=0.35.3",
+  "hf>=1.1.0",
+  "pyzmq>=26.0.0",
+  "streamlit>=1.40.0",
+  "pydantic-settings>=2.6.0",
+]
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.3"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-rocm", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-rocm", marker = "sys_platform == 'linux'" }]
+torchaudio = [{ index = "pytorch-rocm", marker = "sys_platform == 'linux'" }]
+pytorch-triton-rocm = [{ index = "pytorch-rocm", marker = "sys_platform == 'linux'" }]
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mission2*"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
